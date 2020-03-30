@@ -93,6 +93,22 @@ class Board:
             for r in range(min_row, min(max_row - 2, min_row + 4)):
                 if numpy.all(value == self.cells[r:r+4, column]):
                     return True
+            # Check diagonal with negative slope. It is way easier to build a fixed-sized submatrix and skip the iteration if you end out of bounds rather than calculating the correct indexes.
+            for d in range(0, 4):
+                try:
+                    vector = self.cells[row - 3 + d:row + 1 + d, column - 3 + d:column + 1 + d].diagonal()
+                    if numpy.all(value == vector) and len(vector) == 4:
+                        return True
+                except IndexError:
+                    continue
+            # Check diagonal with positive slope. Same as before, but flipping the submatrix, as diagonal() works with the main diagonal.
+            for d in range(0, 4):
+                try:
+                    vector = numpy.fliplr(self.cells[row - d:row + 4 - d, column - 3 + d:column + 1 + d]).diagonal()
+                    if numpy.all(value == vector) and len(vector) == 4:
+                        return True
+                except IndexError:
+                    continue
 
         return False
 
