@@ -26,6 +26,7 @@ class Board:
         self.fgcolor = (0, 0, 255)
         self.p1color = (255, 0, 0)
         self.p2color = (255, 255, 0)
+        self.turn_indicator = (self.cell_size // 2, self.cell_size // 2)
 
     def __repr__(self):
         return str(self.cells)
@@ -47,7 +48,7 @@ class Board:
         pygame.draw.circle(self.surface,
                            {-1: self.p2color,
                             1: self.p1color}[self.turn],
-                           (self.cell_size // 2, self.cell_size // 2),
+                           self.turn_indicator,
                            self.cell_size // 2 - self.cell_size // 10)
 
     def drop(self, pos):
@@ -112,6 +113,13 @@ class Board:
 
         return False
 
+    def update_turn_indicator(self, pos):
+        """
+        Update the position of the turn indicator. We are only interested in the X coordinate, as the indicator moves over a single row.
+        The Y coordinate is in the middle of the cell, because we will use the position to draw a circle.
+        :param pos: Tuple with the screen coordinates of the pointer.
+        """
+        self.turn_indicator = (pos[0], self.cell_size // 2)
 
     def reset(self):
         self.cells = numpy.zeros((self.height, self.width))
@@ -127,6 +135,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Check for window close.
                 pygame.quit()
+            if event.type == pygame.MOUSEMOTION:
+                # Move the turn marker across the top row
+                board.update_turn_indicator(event.pos)
             if event.type == pygame.MOUSEBUTTONUP:
                 pos = board.drop(event.pos)
                 # Is the game ended?
