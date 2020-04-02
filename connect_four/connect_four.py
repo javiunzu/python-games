@@ -1,5 +1,6 @@
 import numpy
 import pygame
+import random
 
 
 class Board:
@@ -11,6 +12,7 @@ class Board:
     """
     cell_size = 80
     turn = 1
+    game_over = False
 
     def __init__(self, width, height):
         """
@@ -125,12 +127,27 @@ class Board:
         self.cells = numpy.zeros((self.height, self.width))
 
 
-def main():
+def main(com):
 
     board = Board(7, 6)
     pygame.init()
 
-    while True:
+    while not board.game_over:
+        # COM players take their actions first, if activated and in their turn.
+        # TODO: refactor the game-over check.
+        if 'red' in com and board.turn == 1:
+            # Put a random piece. This doesn't even qualify as AI ... yet.
+            move = (random.randint(0, board.width * board.cell_size - 1), random.randint(0, board.height * board.cell_size - 1))
+            pos = board.drop(move)
+            if board.finished(*pos):
+                print("Game over")
+                board.game_over = True
+        if 'yellow' in com and board.turn == -1:
+            move = (random.randint(0, board.width * board.cell_size), random.randint(0, board.height * board.cell_size))
+            pos = board.drop(move)
+            if board.finished(*pos):
+                print("Game over")
+                board.game_over = True
         # Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Check for window close.
@@ -143,10 +160,17 @@ def main():
                 # Is the game ended?
                 if board.finished(*pos):
                     print("Game over")
+                    board.game_over = True
+
 
         board.draw()
         pygame.display.update()
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="Players take turns to try to connect 4 pieces of the same color in a line.")
+    parser.add_argument('-c', dest='com', nargs='+', choices=['red', 'yellow'], required=False)
+    args = parser.parse_args()
+    print(args)
+    main(args.com)
